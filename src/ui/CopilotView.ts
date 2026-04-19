@@ -255,10 +255,26 @@ export class CopilotView extends ItemView {
             cls: `copilot-message ${role.toLowerCase()}${isError ? ' error' : ''}`
         });
 
-        msgEl.createEl('div', { cls: 'message-role', text: role });
-        const contentEl = msgEl.createEl('div', { cls: 'message-content' });
+        const headerEl = msgEl.createEl('div', { cls: 'message-header' });
+        headerEl.createEl('div', { cls: 'message-role', text: role });
 
+        const contentEl = msgEl.createEl('div', { cls: 'message-content' });
         await MarkdownRenderer.renderMarkdown(content, contentEl, "", this);
+
+        if (role === 'Assistant') {
+            const footerEl = msgEl.createEl('div', { cls: 'message-footer' });
+            const copyBtn = footerEl.createEl('button', {
+                cls: 'copy-message-button',
+                attr: { 'aria-label': 'Copy response' }
+            });
+            setIcon(copyBtn, 'copy');
+            copyBtn.onclick = async () => {
+                await navigator.clipboard.writeText(content);
+                new Notice('Copied to clipboard');
+                setIcon(copyBtn, 'check');
+                setTimeout(() => setIcon(copyBtn, 'copy'), 2000);
+            };
+        }
 
         this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
         return msgEl;
