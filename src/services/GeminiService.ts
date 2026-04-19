@@ -9,27 +9,32 @@ export class GeminiService {
         this.model = model;
     }
 
-    async generateResponse(prompt: string, context?: string): Promise<string> {
+    async generateResponse(prompt: string, context?: string, history: { role: string, parts: { text: string }[] }[] = []): Promise<string> {
         if (!this.apiKey) {
             throw new Error('API Key is missing. Please set it in the plugin settings.');
         }
 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
 
-        const fullPrompt = context 
+        const fullPrompt = context
             ? `Context from current note:\n${context}\n\nUser Question:\n${prompt}`
             : prompt;
+
+        // Construct contents with history + new prompt
+        const contents = [
+            ...history,
+            {
+                role: "user",
+                parts: [{ text: fullPrompt }]
+            }
+        ];
 
         try {
             const response = await requestUrl({
                 url: url,
                 method: 'POST',
                 contentType: 'application/json',
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: fullPrompt }]
-                    }]
-                })
+                body: JSON.stringify({ contents })
             });
 
             if (response.status !== 200) {

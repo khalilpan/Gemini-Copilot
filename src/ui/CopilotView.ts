@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, MarkdownView, Notice, TFile } from 'obsidian';
+import { ItemView, WorkspaceLeaf, MarkdownView, Notice, TFile, setIcon } from 'obsidian';
 import { GeminiService } from '../services/GeminiService';
 import ObsidianGeminiCopilot from '../main';
 
@@ -13,6 +13,7 @@ export class CopilotView extends ItemView {
     suggestions: TFile[] = [];
     selectedIndex: number = 0;
     triggerCharPos: number = -1;
+    history: { role: string, parts: { text: string }[] }[] = [];
 
     constructor(leaf: WorkspaceLeaf, plugin: ObsidianGeminiCopilot) {
         super(leaf);
@@ -39,6 +40,14 @@ export class CopilotView extends ItemView {
         // Header
         const header = container.createEl('div', { cls: 'copilot-header' });
         header.createEl('h4', { text: 'Gemini Copilot' });
+
+        const headerActions = header.createEl('div', { cls: 'header-actions' });
+        const newChatBtn = headerActions.createEl('button', {
+            cls: 'new-chat-button',
+            attr: { 'aria-label': 'New Conversation' }
+        });
+        setIcon(newChatBtn, 'plus');
+        newChatBtn.onclick = () => this.handleNewChat();
 
         // Context Toggle
         const toggleContainer = header.createEl('div', { cls: 'context-toggle-container' });
@@ -73,6 +82,13 @@ export class CopilotView extends ItemView {
 
         this.inputEl.onkeydown = (e) => this.handleKeyDown(e);
         this.inputEl.oninput = () => this.handleInput();
+    }
+
+    async handleNewChat() {
+        this.history = [];
+        this.messageContainer.empty();
+        this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
+        new Notice('New conversation started');
     }
 
     handleInput() {
@@ -224,9 +240,19 @@ export class CopilotView extends ItemView {
                 }
             }
 
-            const response = await gemini.generateResponse(query, combinedContext);
+            const response = await gemini.generateResponse(query, combinedContext, this.history);
             loadingMsg.remove();
             this.addMessage('Assistant', response);
+
+            // Update history
+            this.history.push({
+                role: "user",
+                parts: [{ text: query }]
+            });
+            this.history.push({
+                role: "model",
+                parts: [{ text: response }]
+            });
         } catch (error) {
             loadingMsg.remove();
             const errorMessage = error instanceof Error ? error.message : String(error);
