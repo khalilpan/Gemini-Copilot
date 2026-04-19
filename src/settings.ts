@@ -1,18 +1,20 @@
 import {App, PluginSettingTab, Setting} from "obsidian";
-import MyPlugin from "./main";
+import ObsidianGeminiCopilot from "./main";
 
 export interface MyPluginSettings {
-	mySetting: string;
+	apiKey: string;
+	model: string;
 }
 
 export const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+	apiKey: '',
+	model: 'gemma-3-27b-it'
 }
 
 export class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: ObsidianGeminiCopilot;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: ObsidianGeminiCopilot) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -22,14 +24,29 @@ export class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
+		containerEl.createEl('h2', {text: 'Settings for Gemini Copilot'});
+
 		new Setting(containerEl)
-			.setName('Settings #1')
-			.setDesc('It\'s a secret')
+			.setName('Google AI API Key')
+			.setDesc('Enter your API key from https://aistudio.google.com/')
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder('Enter your API key')
+				.setValue(this.plugin.settings.apiKey)
 				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.apiKey = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Model')
+			.setDesc('Select the model to use')
+			.addDropdown(dropdown => dropdown
+				.addOption('gemma-3-27b-it', 'Gemma 3 27B IT')
+				.addOption('gemini-1.5-flash', 'Gemini 1.5 Flash')
+				.addOption('gemini-1.5-pro', 'Gemini 1.5 Pro')
+				.setValue(this.plugin.settings.model)
+				.onChange(async (value) => {
+					this.plugin.settings.model = value;
 					await this.plugin.saveSettings();
 				}));
 	}

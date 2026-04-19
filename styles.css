@@ -1,8 +1,124 @@
-/*
+.gemini-copilot-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    background-color: var(--background-secondary);
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.copilot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    margin-bottom: 10px;
+}
 
-If your plugin does not need CSS, delete this file.
+.copilot-header h4 {
+    margin: 0;
+    color: var(--text-accent);
+}
 
-*/
+.context-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8em;
+}
+
+.copilot-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px 5px;
+}
+
+.copilot-message {
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 90%;
+    line-height: 1.4;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.copilot-message.user {
+    align-self: flex-end;
+    background-color: var(--interactive-accent);
+    color: white;
+}
+
+.copilot-message.assistant {
+    align-self: flex-start;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.copilot-message.system {
+    align-self: center;
+    background-color: var(--background-secondary-alt);
+    font-style: italic;
+    font-size: 0.9em;
+    width: 100%;
+    text-align: center;
+}
+
+.copilot-message.error {
+    background-color: var(--background-modifier-error);
+    color: var(--text-on-accent);
+}
+
+.message-role {
+    font-weight: bold;
+    font-size: 0.75em;
+    margin-bottom: 4px;
+    opacity: 0.8;
+    text-transform: uppercase;
+}
+
+.message-content {
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+.copilot-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 15px;
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.copilot-input {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border-radius: 6px;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    resize: vertical;
+    font-family: var(--font-text);
+}
+
+.copilot-send-button {
+    align-self: flex-end;
+    padding: 6px 15px;
+    background-color: var(--interactive-accent);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: filter 0.2s;
+}
+
+.copilot-send-button:hover {
+    filter: brightness(1.1);
+}
+
+.context-toggle {
+    cursor: pointer;
+}
