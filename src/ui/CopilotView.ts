@@ -1,6 +1,7 @@
 import { ItemView, WorkspaceLeaf, MarkdownView, Notice, TFile, setIcon, MarkdownRenderer } from 'obsidian';
 import { GeminiService } from '../services/GeminiService';
 import ObsidianGeminiCopilot from '../main';
+import { AVAILABLE_MODELS, getModelName } from '../utils/constants';
 
 export const VIEW_TYPE_COPILOT = "gemini-copilot-view";
 
@@ -58,6 +59,25 @@ export class CopilotView extends ItemView {
 
         // Input Area
         const inputContainer = container.createEl('div', { cls: 'copilot-input-container' });
+        
+        const inputHeader = inputContainer.createEl('div', { cls: 'copilot-input-header' });
+        const modelSelect = inputHeader.createEl('select', { cls: 'model-selector' });
+        
+        AVAILABLE_MODELS.forEach(model => {
+            const option = modelSelect.createEl('option', {
+                text: model.name,
+                value: model.id
+            });
+            if (model.id === this.plugin.settings.model) {
+                option.selected = true;
+            }
+        });
+
+        modelSelect.onchange = async () => {
+            this.plugin.settings.model = modelSelect.value;
+            await this.plugin.saveSettings();
+        };
+
         this.inputEl = inputContainer.createEl('textarea', {
             cls: 'copilot-input',
             placeholder: 'Ask me anything... use @ to mention notes'
@@ -231,7 +251,7 @@ export class CopilotView extends ItemView {
 
             const response = await gemini.generateResponse(query, combinedContext, this.history);
             loadingMsg.remove();
-            await this.addMessage('Assistant', response);
+            await this.addMessage('Assistant', response, false, this.plugin.settings.model);
 
             // Update history
             this.history.push({
@@ -250,7 +270,7 @@ export class CopilotView extends ItemView {
         }
     }
 
-    async addMessage(role: string, content: string, isError: boolean = false): Promise<HTMLDivElement> {
+    async addMessage(role: string, content: string, isError: boolean = false, modelId?: string): Promise<HTMLDivElement> {
         const msgEl = this.messageContainer.createEl('div', {
             cls: `copilot-message ${role.toLowerCase()}${isError ? ' error' : ''}`
         });
@@ -263,6 +283,14 @@ export class CopilotView extends ItemView {
 
         if (role === 'Assistant') {
             const footerEl = msgEl.createEl('div', { cls: 'message-footer' });
+            
+            if (modelId) {
+                footerEl.createEl('div', { 
+                    cls: 'message-model-name', 
+                    text: getModelName(modelId) 
+                });
+            }
+
             const copyBtn = footerEl.createEl('button', {
                 cls: 'copy-message-button',
                 attr: { 'aria-label': 'Copy response' }

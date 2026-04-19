@@ -110,8 +110,18 @@
 .message-footer {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     margin-top: 4px;
     height: 26px; /* Match button height */
+    gap: 8px;
+}
+
+.message-model-name {
+    font-size: 0.7em;
+    color: var(--text-muted);
+    opacity: 0.6;
+    margin-right: auto;
+    font-style: italic;
 }
 
 .copy-message-button {
@@ -215,6 +225,36 @@
 
 .copilot-send-button:hover {
     filter: brightness(1.1);
+}
+
+.copilot-input-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 4px;
+    padding: 0 4px;
+}
+
+.model-selector {
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-muted);
+    font-size: 0.75em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.model-selector:hover {
+    border-color: var(--text-accent);
+    color: var(--text-normal);
+}
+
+.model-selector:focus {
+    border-color: var(--text-accent);
+    box-shadow: 0 0 0 1px var(--text-accent);
 }
 
 

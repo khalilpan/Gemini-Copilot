@@ -30,12 +30,25 @@ export class GeminiService {
         ];
 
         try {
-            const response = await requestUrl({
+            const requestOptions = {
                 url: url,
-                method: 'POST',
+                method: 'POST' as const,
                 contentType: 'application/json',
                 body: JSON.stringify({ contents })
-            });
+            };
+
+            console.log('--- Gemini API Request ---');
+            console.log('URL:', requestOptions.url);
+            console.log('Method:', requestOptions.method);
+            console.log('Headers:', { 'Content-Type': requestOptions.contentType });
+            console.log('Body:', JSON.parse(requestOptions.body));
+
+            const response = await requestUrl(requestOptions);
+
+            console.log('--- Gemini API Response ---');
+            console.log('Status:', response.status);
+            console.log('Headers:', response.headers);
+            console.log('Response JSON:', response.json);
 
             if (response.status !== 200) {
                 const errorData = response.json;

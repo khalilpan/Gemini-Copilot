@@ -1,5 +1,6 @@
-import {App, PluginSettingTab, Setting} from "obsidian";
+import { App, PluginSettingTab, Setting } from "obsidian";
 import ObsidianGeminiCopilot from "./main";
+import { AVAILABLE_MODELS } from "./utils/constants";
 
 export interface MyPluginSettings {
 	apiKey: string;
@@ -22,11 +23,11 @@ export class SampleSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Settings for Gemini Copilot'});
+		containerEl.createEl('h2', { text: 'Settings for Gemini Copilot' });
 
 		new Setting(containerEl)
 			.setName('Google AI API Key')
@@ -42,15 +43,16 @@ export class SampleSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName('Model')
 			.setDesc('Select the model to use')
-			.addDropdown(dropdown => dropdown
-				.addOption('gemma-3-27b-it', 'Gemma 3 27B IT')
-				.addOption('gemini-1.5-flash', 'Gemini 1.5 Flash')
-				.addOption('gemini-1.5-pro', 'Gemini 1.5 Pro')
-				.setValue(this.plugin.settings.model)
-				.onChange(async (value) => {
-					this.plugin.settings.model = value;
-					await this.plugin.saveSettings();
-				}));
+			.addDropdown(dropdown => {
+				AVAILABLE_MODELS.forEach(model => {
+					dropdown.addOption(model.id, model.name);
+				});
+				dropdown.setValue(this.plugin.settings.model)
+					.onChange(async (value) => {
+						this.plugin.settings.model = value;
+						await this.plugin.saveSettings();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName('Use Page Context')
