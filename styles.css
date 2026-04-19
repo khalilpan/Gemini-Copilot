@@ -106,7 +106,40 @@
 
 .message-content {
     word-break: break-word;
-    white-space: pre-wrap;
+}
+
+.message-content p {
+    margin-top: 0;
+    margin-bottom: 0.8em;
+}
+
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+.message-content ul, .message-content ol {
+    padding-left: 20px;
+    margin-bottom: 0.8em;
+}
+
+.message-content code {
+    background-color: var(--background-secondary-alt);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.message-content pre {
+    background-color: var(--background-secondary-alt);
+    padding: 10px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin-bottom: 0.8em;
+}
+
+.message-content pre code {
+    background-color: transparent;
+    padding: 0;
 }
 
 .copilot-input-container {

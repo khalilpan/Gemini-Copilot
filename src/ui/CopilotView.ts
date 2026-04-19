@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, MarkdownView, Notice, TFile, setIcon } from 'obsidian';
+import { ItemView, WorkspaceLeaf, MarkdownView, Notice, TFile, setIcon, MarkdownRenderer } from 'obsidian';
 import { GeminiService } from '../services/GeminiService';
 import ObsidianGeminiCopilot from '../main';
 
@@ -50,7 +50,7 @@ export class CopilotView extends ItemView {
 
         // Message Container
         this.messageContainer = container.createEl('div', { cls: 'copilot-messages' });
-        this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
+        await this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
 
         // Suggestion List (Hidden initially)
         this.suggestEl = container.createEl('div', { cls: 'copilot-suggest' });
@@ -77,7 +77,7 @@ export class CopilotView extends ItemView {
     async handleNewChat() {
         this.history = [];
         this.messageContainer.empty();
-        this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
+        await this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
         new Notice('New conversation started');
     }
 
@@ -194,9 +194,8 @@ export class CopilotView extends ItemView {
         if (!query) return;
 
         this.inputEl.value = '';
-        this.addMessage('User', query);
-
-        const loadingMsg = this.addMessage('Assistant', 'Thinking...');
+        await this.addMessage('User', query);
+        const loadingMsg = await this.addMessage('Assistant', 'Thinking...');
 
         try {
             const gemini = new GeminiService(this.plugin.settings.apiKey, this.plugin.settings.model);
@@ -232,7 +231,7 @@ export class CopilotView extends ItemView {
 
             const response = await gemini.generateResponse(query, combinedContext, this.history);
             loadingMsg.remove();
-            this.addMessage('Assistant', response);
+            await this.addMessage('Assistant', response);
 
             // Update history
             this.history.push({
@@ -246,12 +245,12 @@ export class CopilotView extends ItemView {
         } catch (error) {
             loadingMsg.remove();
             const errorMessage = error instanceof Error ? error.message : String(error);
-            this.addMessage('System', `Error: ${errorMessage}`, true);
+            await this.addMessage('System', `Error: ${errorMessage}`, true);
             new Notice(`Gemini Error: ${errorMessage}`);
         }
     }
 
-    addMessage(role: string, content: string, isError: boolean = false): HTMLDivElement {
+    async addMessage(role: string, content: string, isError: boolean = false): Promise<HTMLDivElement> {
         const msgEl = this.messageContainer.createEl('div', {
             cls: `copilot-message ${role.toLowerCase()}${isError ? ' error' : ''}`
         });
@@ -259,7 +258,7 @@ export class CopilotView extends ItemView {
         msgEl.createEl('div', { cls: 'message-role', text: role });
         const contentEl = msgEl.createEl('div', { cls: 'message-content' });
 
-        contentEl.innerText = content;
+        await MarkdownRenderer.renderMarkdown(content, contentEl, "", this);
 
         this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
         return msgEl;
