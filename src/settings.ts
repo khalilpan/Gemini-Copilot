@@ -4,13 +4,13 @@ import { AVAILABLE_MODELS } from "./utils/constants";
 
 export interface MyPluginSettings {
 	apiKey: string;
-	model: string;
+	defaultModel: string;
 	useContext: boolean;
 }
 
 export const DEFAULT_SETTINGS: MyPluginSettings = {
 	apiKey: '',
-	model: 'gemma-3-27b-it',
+	defaultModel: 'gemma-3-27b-it',
 	useContext: true
 }
 
@@ -41,15 +41,15 @@ export class SampleSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Model')
-			.setDesc('Select the model to use')
+			.setName('Default Model')
+			.setDesc('Select the default model to use for new conversations')
 			.addDropdown(dropdown => {
 				AVAILABLE_MODELS.forEach(model => {
 					dropdown.addOption(model.id, model.name);
 				});
-				dropdown.setValue(this.plugin.settings.model)
+				dropdown.setValue(this.plugin.settings.defaultModel)
 					.onChange(async (value) => {
-						this.plugin.settings.model = value;
+						this.plugin.settings.defaultModel = value;
 						await this.plugin.saveSettings();
 					});
 			});

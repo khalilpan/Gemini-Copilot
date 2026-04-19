@@ -62,7 +62,15 @@ export default class ObsidianGeminiCopilot extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MyPluginSettings>);
+		const loadedData = await this.loadData();
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedData);
+		
+		// Migration: if the old 'model' setting exists, move it to 'defaultModel' and delete 'model'
+		if (loadedData && (loadedData as any).model) {
+			this.settings.defaultModel = (loadedData as any).model;
+			delete (this.settings as any).model;
+			await this.saveSettings();
+		}
 	}
 
 	async saveSettings() {

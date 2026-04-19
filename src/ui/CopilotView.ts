@@ -14,6 +14,8 @@ export class CopilotView extends ItemView {
     selectedIndex: number = 0;
     triggerCharPos: number = -1;
     history: { role: string, parts: { text: string }[] }[] = [];
+    sessionModel: string;
+    modelSelect: HTMLSelectElement;
 
     constructor(leaf: WorkspaceLeaf, plugin: ObsidianGeminiCopilot) {
         super(leaf);
@@ -33,6 +35,8 @@ export class CopilotView extends ItemView {
     }
 
     async onOpen() {
+        this.sessionModel = this.plugin.settings.defaultModel;
+
         const container = this.contentEl;
         container.empty();
         container.addClass('gemini-copilot-container');
@@ -61,21 +65,20 @@ export class CopilotView extends ItemView {
         const inputContainer = container.createEl('div', { cls: 'copilot-input-container' });
         
         const inputHeader = inputContainer.createEl('div', { cls: 'copilot-input-header' });
-        const modelSelect = inputHeader.createEl('select', { cls: 'model-selector' });
+        this.modelSelect = inputHeader.createEl('select', { cls: 'model-selector' });
         
         AVAILABLE_MODELS.forEach(model => {
-            const option = modelSelect.createEl('option', {
+            const option = this.modelSelect.createEl('option', {
                 text: model.name,
                 value: model.id
             });
-            if (model.id === this.plugin.settings.model) {
+            if (model.id === this.sessionModel) {
                 option.selected = true;
             }
         });
 
-        modelSelect.onchange = async () => {
-            this.plugin.settings.model = modelSelect.value;
-            await this.plugin.saveSettings();
+        this.modelSelect.onchange = () => {
+            this.sessionModel = this.modelSelect.value;
         };
 
         this.inputEl = inputContainer.createEl('textarea', {
@@ -96,6 +99,8 @@ export class CopilotView extends ItemView {
 
     async handleNewChat() {
         this.history = [];
+        this.sessionModel = this.plugin.settings.defaultModel;
+        this.modelSelect.value = this.sessionModel;
         this.messageContainer.empty();
         await this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
         new Notice('New conversation started');
@@ -218,7 +223,7 @@ export class CopilotView extends ItemView {
         const loadingMsg = await this.addMessage('Assistant', 'Thinking...');
 
         try {
-            const gemini = new GeminiService(this.plugin.settings.apiKey, this.plugin.settings.model);
+            const gemini = new GeminiService(this.plugin.settings.apiKey, this.sessionModel);
 
             let combinedContext = "";
 
@@ -251,7 +256,7 @@ export class CopilotView extends ItemView {
 
             const response = await gemini.generateResponse(query, combinedContext, this.history);
             loadingMsg.remove();
-            await this.addMessage('Assistant', response, false, this.plugin.settings.model);
+            await this.addMessage('Assistant', response, false, this.sessionModel);
 
             // Update history
             this.history.push({
