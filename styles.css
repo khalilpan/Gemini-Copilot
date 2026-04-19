@@ -20,12 +20,6 @@
     color: var(--text-accent);
 }
 
-.context-toggle-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8em;
-}
 
 .header-actions {
     display: flex;
@@ -150,9 +144,6 @@
     filter: brightness(1.1);
 }
 
-.context-toggle {
-    cursor: pointer;
-}
 
 /* Suggestion List */
 .copilot-suggest {

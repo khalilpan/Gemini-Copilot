@@ -4,11 +4,13 @@ import ObsidianGeminiCopilot from "./main";
 export interface MyPluginSettings {
 	apiKey: string;
 	model: string;
+	useContext: boolean;
 }
 
 export const DEFAULT_SETTINGS: MyPluginSettings = {
 	apiKey: '',
-	model: 'gemma-3-27b-it'
+	model: 'gemma-3-27b-it',
+	useContext: true
 }
 
 export class SampleSettingTab extends PluginSettingTab {
@@ -47,6 +49,16 @@ export class SampleSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.model)
 				.onChange(async (value) => {
 					this.plugin.settings.model = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Use Page Context')
+			.setDesc('Automatically include the content of the active note in your queries.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.useContext)
+				.onChange(async (value) => {
+					this.plugin.settings.useContext = value;
 					await this.plugin.saveSettings();
 				}));
 	}

@@ -6,7 +6,6 @@ export const VIEW_TYPE_COPILOT = "gemini-copilot-view";
 
 export class CopilotView extends ItemView {
     plugin: ObsidianGeminiCopilot;
-    useContext: boolean = true;
     messageContainer: HTMLDivElement;
     inputEl: HTMLTextAreaElement;
     suggestEl: HTMLDivElement;
@@ -48,15 +47,6 @@ export class CopilotView extends ItemView {
         });
         setIcon(newChatBtn, 'plus');
         newChatBtn.onclick = () => this.handleNewChat();
-
-        // Context Toggle
-        const toggleContainer = header.createEl('div', { cls: 'context-toggle-container' });
-        const toggleLabel = toggleContainer.createEl('label', { text: 'Use Page Context', cls: 'toggle-label' });
-        const toggle = toggleContainer.createEl('input', { type: 'checkbox', cls: 'context-toggle' });
-        toggle.checked = this.useContext;
-        toggle.onclick = () => {
-            this.useContext = toggle.checked;
-        };
 
         // Message Container
         this.messageContainer = container.createEl('div', { cls: 'copilot-messages' });
@@ -229,7 +219,7 @@ export class CopilotView extends ItemView {
             }
 
             // 2. Add current page context if enabled
-            if (this.useContext) {
+            if (this.plugin.settings.useContext) {
                 const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
                 if (activeView) {
                     const activeFile = activeView.file;
