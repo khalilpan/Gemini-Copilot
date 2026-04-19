@@ -1,9 +1,9 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
-import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from "./settings";
+import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
+import { DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab } from "./settings";
 
 // Remember to rename these classes and interfaces!
 
-export default class MyPlugin extends Plugin {
+export default class ObsidianGeminiCopilot extends Plugin {
 	settings: MyPluginSettings;
 
 	async onload() {
@@ -71,6 +71,9 @@ export default class MyPlugin extends Plugin {
 	}
 
 	onunload() {
+		this.addRibbonIcon('dice', 'Greet', () => {
+			new Notice('Hello, world!');
+		});
 	}
 
 	async loadSettings() {
@@ -88,12 +91,12 @@ class SampleModal extends Modal {
 	}
 
 	onOpen() {
-		let {contentEl} = this;
+		let { contentEl } = this;
 		contentEl.setText('Woah!');
 	}
 
 	onClose() {
-		const {contentEl} = this;
+		const { contentEl } = this;
 		contentEl.empty();
 	}
 }
