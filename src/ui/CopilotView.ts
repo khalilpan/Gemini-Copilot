@@ -242,18 +242,6 @@ export class CopilotView extends ItemView {
                 }
             }
 
-            // 2. Add current page context if enabled
-            if (this.plugin.settings.useContext) {
-                const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-                if (activeView) {
-                    const activeFile = activeView.file;
-                    if (activeFile && !seenFiles.has(activeFile.path)) {
-                        const content = activeView.editor.getValue();
-                        combinedContext += `--- Content of Current Note: ${activeFile.basename} ---\n${content}\n\n`;
-                    }
-                }
-            }
-
             const response = await gemini.generateResponse(query, combinedContext, this.history);
             loadingMsg.remove();
             await this.addMessage('Assistant', response, false, this.sessionModel);

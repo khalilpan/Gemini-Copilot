@@ -5,13 +5,11 @@ import { AVAILABLE_MODELS } from "./utils/constants";
 export interface MyPluginSettings {
 	apiKey: string;
 	defaultModel: string;
-	useContext: boolean;
 }
 
 export const DEFAULT_SETTINGS: MyPluginSettings = {
 	apiKey: '',
-	defaultModel: 'gemma-3-27b-it',
-	useContext: true
+	defaultModel: 'gemma-3-27b-it'
 }
 
 export class SampleSettingTab extends PluginSettingTab {
@@ -54,14 +52,5 @@ export class SampleSettingTab extends PluginSettingTab {
 					});
 			});
 
-		new Setting(containerEl)
-			.setName('Use Page Context')
-			.setDesc('Automatically include the content of the active note in your queries.')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.useContext)
-				.onChange(async (value) => {
-					this.plugin.settings.useContext = value;
-					await this.plugin.saveSettings();
-				}));
 	}
 }
