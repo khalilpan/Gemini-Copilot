@@ -162,6 +162,20 @@ export class CopilotView extends ItemView {
         } else {
             this.hideSuggestions();
         }
+
+        this.adjustInputHeight();
+    }
+
+    private adjustInputHeight() {
+        this.inputEl.style.height = 'auto';
+        this.inputEl.style.height = this.inputEl.scrollHeight + 'px';
+        
+        // Show scrollbar only when max height is reached
+        if (this.inputEl.scrollHeight > this.inputEl.offsetHeight) {
+            this.inputEl.style.overflowY = 'auto';
+        } else {
+            this.inputEl.style.overflowY = 'hidden';
+        }
     }
 
     handleKeyDown(e: KeyboardEvent) {
@@ -257,6 +271,7 @@ export class CopilotView extends ItemView {
         this.inputEl.selectionStart = this.inputEl.selectionEnd = before.length + file.basename.length + 2;
         this.addContextFile(file);
         this.hideSuggestions();
+        this.adjustInputHeight();
     }
 
     private addContextFile(file: TFile | null) {
@@ -294,6 +309,8 @@ export class CopilotView extends ItemView {
         if (!query) return;
 
         this.inputEl.value = '';
+        this.inputEl.style.height = 'auto';
+        this.inputEl.style.overflowY = 'hidden';
         await this.addMessage('User', query);
         const loadingMsg = await this.addMessage('Assistant', 'Thinking...');
 
