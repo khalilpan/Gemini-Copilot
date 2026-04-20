@@ -109,7 +109,12 @@ export class CopilotView extends ItemView {
         const inputWrapper = inputContainer.createEl('div', { cls: 'copilot-input-wrapper' });
 
         this.chipsContainer = inputWrapper.createEl('div', { cls: 'context-chips-container' });
+        this.addContextFile(this.app.workspace.getActiveFile());
         this.renderContextChips();
+
+        this.registerEvent(this.app.workspace.on('file-open', (file) => {
+            this.addContextFile(file);
+        }));
 
         this.inputEl = inputWrapper.createEl('textarea', {
             cls: 'copilot-input',
@@ -132,6 +137,7 @@ export class CopilotView extends ItemView {
         this.sessionModel = this.plugin.settings.defaultModel;
         this.modelSelect.value = this.sessionModel;
         this.contextFiles = [];
+        this.addContextFile(this.app.workspace.getActiveFile());
         this.renderContextChips();
         this.messageContainer.empty();
         await this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
@@ -243,7 +249,17 @@ export class CopilotView extends ItemView {
         this.inputEl.value = before + '@' + file.basename + ' ' + after;
         this.inputEl.focus();
         this.inputEl.selectionStart = this.inputEl.selectionEnd = before.length + file.basename.length + 2;
+        this.addContextFile(file);
         this.hideSuggestions();
+    }
+
+    private addContextFile(file: TFile | null) {
+        if (file && file instanceof TFile && file.extension === 'md') {
+            if (!this.contextFiles.find(f => f.path === file.path)) {
+                this.contextFiles.push(file);
+                this.renderContextChips();
+            }
+        }
     }
 
     renderContextChips() {
