@@ -402,6 +402,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: red;
 }
 
 .context-chip-remove {
