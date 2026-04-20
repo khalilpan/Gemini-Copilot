@@ -2,6 +2,7 @@ import { ItemView, WorkspaceLeaf, MarkdownView, Notice, TFile, setIcon, Markdown
 import { GeminiService } from '../services/GeminiService';
 import ObsidianGeminiCopilot from '../main';
 import { AVAILABLE_MODELS, getModelName } from '../utils/constants';
+import { ContextFileModal } from './ContextFileModal';
 
 export const VIEW_TYPE_COPILOT = "gemini-copilot-view";
 
@@ -16,6 +17,8 @@ export class CopilotView extends ItemView {
     history: { role: string, parts: { text: string }[] }[] = [];
     sessionModel: string;
     modelSelect: HTMLSelectElement;
+    contextFiles: TFile[] = [];
+    chipsContainer: HTMLDivElement;
 
     constructor(leaf: WorkspaceLeaf, plugin: ObsidianGeminiCopilot) {
         super(leaf);
@@ -65,6 +68,24 @@ export class CopilotView extends ItemView {
         const inputContainer = container.createEl('div', { cls: 'copilot-input-container' });
         
         const inputHeader = inputContainer.createEl('div', { cls: 'copilot-input-header' });
+        
+        // Add context button
+        const addContextBtn = inputHeader.createEl('button', {
+            cls: 'add-context-button',
+            attr: { 'aria-label': 'Add context file' }
+        });
+        setIcon(addContextBtn, 'plus');
+        addContextBtn.onclick = () => {
+            new ContextFileModal(this.app, (file) => {
+                if (!this.contextFiles.find(f => f.path === file.path)) {
+                    this.contextFiles.push(file);
+                    this.renderContextChips();
+                } else {
+                    new Notice('File already added as context');
+                }
+            }).open();
+        };
+
         const modelSelectWrapper = inputHeader.createEl('div', { cls: 'model-selector-wrapper' });
         this.modelSelect = modelSelectWrapper.createEl('select', { cls: 'model-selector' });
         
@@ -85,7 +106,12 @@ export class CopilotView extends ItemView {
             this.sessionModel = this.modelSelect.value;
         };
 
-        this.inputEl = inputContainer.createEl('textarea', {
+        const inputWrapper = inputContainer.createEl('div', { cls: 'copilot-input-wrapper' });
+
+        this.chipsContainer = inputWrapper.createEl('div', { cls: 'context-chips-container' });
+        this.renderContextChips();
+
+        this.inputEl = inputWrapper.createEl('textarea', {
             cls: 'copilot-input',
             placeholder: 'Ask me anything... use @ to mention notes'
         });
@@ -105,6 +131,8 @@ export class CopilotView extends ItemView {
         this.history = [];
         this.sessionModel = this.plugin.settings.defaultModel;
         this.modelSelect.value = this.sessionModel;
+        this.contextFiles = [];
+        this.renderContextChips();
         this.messageContainer.empty();
         await this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
         new Notice('New conversation started');
@@ -218,6 +246,27 @@ export class CopilotView extends ItemView {
         this.hideSuggestions();
     }
 
+    renderContextChips() {
+        this.chipsContainer.empty();
+        if (this.contextFiles.length === 0) {
+            this.chipsContainer.hide();
+            return;
+        }
+        this.chipsContainer.show();
+
+        this.contextFiles.forEach(file => {
+            const chip = this.chipsContainer.createEl('div', { cls: 'context-chip' });
+            chip.createEl('span', { text: file.basename, cls: 'context-chip-name' });
+            
+            const removeBtn = chip.createEl('div', { cls: 'context-chip-remove' });
+            setIcon(removeBtn, 'x');
+            removeBtn.onclick = () => {
+                this.contextFiles = this.contextFiles.filter(f => f.path !== file.path);
+                this.renderContextChips();
+            };
+        });
+    }
+
     async handleSendMessage() {
         const query = this.inputEl.value.trim();
         if (!query) return;
@@ -235,6 +284,15 @@ export class CopilotView extends ItemView {
             const mentionRegex = /@([^\s\n]+)/g;
             let match;
             const seenFiles = new Set<string>();
+
+            // Add files from context chips first
+            for (const file of this.contextFiles) {
+                if (!seenFiles.has(file.path)) {
+                    const content = await this.app.vault.read(file);
+                    combinedContext += `--- Content of note: ${file.basename} ---\n${content}\n\n`;
+                    seenFiles.add(file.path);
+                }
+            }
 
             while ((match = mentionRegex.exec(query)) !== null) {
                 const fileName = match[1];

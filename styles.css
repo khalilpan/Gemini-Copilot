@@ -200,15 +200,32 @@
     border-top: 1px solid var(--background-modifier-border);
 }
 
-.copilot-input {
+.copilot-input-wrapper {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     min-height: 80px;
-    padding: 10px;
+    padding: 8px;
     border-radius: 6px;
     background-color: var(--background-primary);
     border: 1px solid var(--background-modifier-border);
+    transition: border-color 0.2s;
+}
+
+.copilot-input-wrapper:focus-within {
+    border-color: var(--text-accent);
+}
+
+.copilot-input {
+    width: 100%;
+    flex-grow: 1;
+    padding: 4px;
+    background: transparent;
+    border: none;
     resize: vertical;
     font-family: var(--font-text);
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .copilot-send-button {
@@ -229,7 +246,7 @@
 
 .copilot-input-header {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 4px;
     padding: 0 4px;
@@ -325,4 +342,84 @@
     opacity: 0.5;
     font-style: italic;
     margin-left: 10px;
+}
+
+/* Context Support */
+.add-context-button {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+    margin-right: 8px;
+}
+
+.add-context-button:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.add-context-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+.context-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 4px 4px 8px 4px; /* More bottom padding to separate from textarea */
+    margin-bottom: 0;
+    max-height: 100px;
+    overflow-y: auto;
+    border-bottom: 1px solid var(--background-modifier-border-focus);
+}
+
+.context-chip {
+    display: flex;
+    align-items: center;
+    background-color: var(--background-secondary-alt);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.75em;
+    color: var(--text-muted);
+    gap: 4px;
+}
+
+.context-chip:hover {
+    border-color: var(--text-accent);
+    color: var(--text-normal);
+}
+
+.context-chip-name {
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.context-chip-remove {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.context-chip-remove:hover {
+    opacity: 1;
+    color: var(--text-error);
+}
+
+.context-chip-remove svg {
+    width: 12px;
+    height: 12px;
 }
