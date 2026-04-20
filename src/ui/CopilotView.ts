@@ -19,6 +19,7 @@ export class CopilotView extends ItemView {
     modelSelect: HTMLSelectElement;
     contextFiles: TFile[] = [];
     chipsContainer: HTMLDivElement;
+    private isAutoNoteExcluded: boolean = false;
 
     constructor(leaf: WorkspaceLeaf, plugin: ObsidianGeminiCopilot) {
         super(leaf);
@@ -107,11 +108,11 @@ export class CopilotView extends ItemView {
         };
 
         const inputWrapper = inputContainer.createEl('div', { cls: 'copilot-input-wrapper' });
-
         this.chipsContainer = inputWrapper.createEl('div', { cls: 'context-chips-container' });
         this.renderContextChips();
 
         this.registerEvent(this.app.workspace.on('file-open', () => {
+            this.isAutoNoteExcluded = false;
             if (this.plugin.settings.autoAddActiveNote) {
                 this.renderContextChips();
             }
@@ -138,6 +139,7 @@ export class CopilotView extends ItemView {
         this.sessionModel = this.plugin.settings.defaultModel;
         this.modelSelect.value = this.sessionModel;
         this.contextFiles = [];
+        this.isAutoNoteExcluded = false;
         this.renderContextChips();
         this.messageContainer.empty();
         await this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
@@ -281,7 +283,7 @@ export class CopilotView extends ItemView {
         this.chipsContainer.empty();
         
         const activeFile = this.app.workspace.getActiveFile();
-        const showActive = this.plugin.settings.autoAddActiveNote && activeFile && activeFile.extension === 'md';
+        const showActive = this.plugin.settings.autoAddActiveNote && activeFile && activeFile.extension === 'md' && !this.isAutoNoteExcluded;
 
         if (this.contextFiles.length === 0 && !showActive) {
             this.chipsContainer.hide();
@@ -292,6 +294,13 @@ export class CopilotView extends ItemView {
         if (showActive && activeFile) {
             const chip = this.chipsContainer.createEl('div', { cls: 'context-chip active-note' });
             chip.createEl('span', { text: `Active: ${activeFile.basename}`, cls: 'context-chip-name' });
+            
+            const removeBtn = chip.createEl('div', { cls: 'context-chip-remove' });
+            setIcon(removeBtn, 'x');
+            removeBtn.onclick = () => {
+                this.isAutoNoteExcluded = true;
+                this.renderContextChips();
+            };
         }
 
         this.contextFiles.forEach(file => {
@@ -329,8 +338,8 @@ export class CopilotView extends ItemView {
             const allFiles = this.app.vault.getMarkdownFiles();
             const seenFiles = new Set<string>();
 
-            // 0. Add active file if auto-add is enabled
-            if (this.plugin.settings.autoAddActiveNote) {
+            // 0. Add active file if auto-add is enabled and not excluded
+            if (this.plugin.settings.autoAddActiveNote && !this.isAutoNoteExcluded) {
                 const activeFile = this.app.workspace.getActiveFile();
                 if (activeFile && activeFile.extension === 'md') {
                     try {
