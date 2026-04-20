@@ -5,11 +5,13 @@ import { AVAILABLE_MODELS } from "./utils/constants";
 export interface MyPluginSettings {
 	apiKey: string;
 	defaultModel: string;
+	autoAddActiveNote: boolean;
 }
 
 export const DEFAULT_SETTINGS: MyPluginSettings = {
 	apiKey: '',
-	defaultModel: 'gemma-3-27b-it'
+	defaultModel: 'gemma-3-27b-it',
+	autoAddActiveNote: true
 }
 
 export class SampleSettingTab extends PluginSettingTab {
@@ -52,5 +54,14 @@ export class SampleSettingTab extends PluginSettingTab {
 					});
 			});
 
+		new Setting(containerEl)
+			.setName('Add the current note as context in new conversations/session')
+			.setDesc('Automatically add the currently active note as context when starting a new chat or switching files.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.autoAddActiveNote)
+				.onChange(async (value) => {
+					this.plugin.settings.autoAddActiveNote = value;
+					await this.plugin.saveSettings();
+				}));
 	}
 }

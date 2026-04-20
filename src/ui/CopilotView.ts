@@ -109,11 +109,15 @@ export class CopilotView extends ItemView {
         const inputWrapper = inputContainer.createEl('div', { cls: 'copilot-input-wrapper' });
 
         this.chipsContainer = inputWrapper.createEl('div', { cls: 'context-chips-container' });
-        this.addContextFile(this.app.workspace.getActiveFile());
+        if (this.plugin.settings.autoAddActiveNote) {
+            this.addContextFile(this.app.workspace.getActiveFile());
+        }
         this.renderContextChips();
 
         this.registerEvent(this.app.workspace.on('file-open', (file) => {
-            this.addContextFile(file);
+            if (this.plugin.settings.autoAddActiveNote) {
+                this.addContextFile(file);
+            }
         }));
 
         this.inputEl = inputWrapper.createEl('textarea', {
@@ -137,7 +141,9 @@ export class CopilotView extends ItemView {
         this.sessionModel = this.plugin.settings.defaultModel;
         this.modelSelect.value = this.sessionModel;
         this.contextFiles = [];
-        this.addContextFile(this.app.workspace.getActiveFile());
+        if (this.plugin.settings.autoAddActiveNote) {
+            this.addContextFile(this.app.workspace.getActiveFile());
+        }
         this.renderContextChips();
         this.messageContainer.empty();
         await this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
