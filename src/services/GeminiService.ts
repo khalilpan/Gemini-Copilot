@@ -17,7 +17,13 @@ export class GeminiService {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
 
         const fullPrompt = context
-            ? `Context from current note:\n${context}\n\nUser Question:\n${prompt}`
+            ? `I am providing you with the content of some notes from my Obsidian vault as context for our conversation. Please use this information to answer my question.
+
+CONTEXT NOTES:
+${context}
+
+USER QUESTION:
+${prompt}`
             : prompt;
 
         // Construct contents with history + new prompt

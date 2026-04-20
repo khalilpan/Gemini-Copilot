@@ -319,28 +319,48 @@ export class CopilotView extends ItemView {
 
             let combinedContext = "";
 
-            // 1. Check for @mentions in the query
-            const mentionRegex = /@([^\s\n]+)/g;
-            let match;
+            // Gather all markdown files once for lookup
+            const allFiles = this.app.vault.getMarkdownFiles();
             const seenFiles = new Set<string>();
 
-            // Add files from context chips first
+            // 1. Add files from context chips first (explicitly added)
             for (const file of this.contextFiles) {
                 if (!seenFiles.has(file.path)) {
-                    const content = await this.app.vault.read(file);
-                    combinedContext += `--- Content of note: ${file.basename} ---\n${content}\n\n`;
-                    seenFiles.add(file.path);
+                    try {
+                        const content = await this.app.vault.read(file);
+                        combinedContext += `Note: ${file.basename}\nContent:\n${content}\n---\n\n`;
+                        seenFiles.add(file.path);
+                    } catch (err) {
+                        console.error(`Failed to read context file: ${file.path}`, err);
+                    }
                 }
             }
 
-            while ((match = mentionRegex.exec(query)) !== null) {
-                const fileName = match[1];
-                const file = this.app.vault.getMarkdownFiles().find(f => f.basename === fileName);
-                if (file && !seenFiles.has(file.path)) {
-                    const content = await this.app.vault.read(file);
-                    combinedContext += `--- Content of note: ${file.basename} ---\n${content}\n\n`;
-                    seenFiles.add(file.path);
+            // 2. Scan for @mentions in the query text to pick up any others
+            let i = query.indexOf('@');
+            while (i !== -1) {
+                const textAfterAt = query.substring(i + 1);
+                let bestMatch: TFile | null = null;
+                
+                for (const file of allFiles) {
+                    // Check if query contains this filename right after @
+                    if (textAfterAt.startsWith(file.basename)) {
+                        if (!bestMatch || file.basename.length > bestMatch.basename.length) {
+                            bestMatch = file;
+                        }
+                    }
                 }
+
+                if (bestMatch && !seenFiles.has(bestMatch.path)) {
+                    try {
+                        const content = await this.app.vault.read(bestMatch);
+                        combinedContext += `Note: ${bestMatch.basename}\nContent:\n${content}\n---\n\n`;
+                        seenFiles.add(bestMatch.path);
+                    } catch (err) {
+                        console.error(`Failed to read mentioned file: ${bestMatch.path}`, err);
+                    }
+                }
+                i = query.indexOf('@', i + 1);
             }
 
             const response = await gemini.generateResponse(query, combinedContext, this.history);
