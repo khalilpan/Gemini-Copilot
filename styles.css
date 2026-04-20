@@ -235,12 +235,20 @@
     padding: 0 4px;
 }
 
+.model-selector-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
 .model-selector {
+    appearance: none;
+    -webkit-appearance: none;
     background-color: var(--background-secondary);
     border: 1px solid var(--background-modifier-border);
     color: var(--text-muted);
     font-size: 0.75em;
-    padding: 2px 6px;
+    padding: 2px 24px 2px 8px;
     border-radius: 4px;
     cursor: pointer;
     outline: none;
@@ -255,6 +263,21 @@
 .model-selector:focus {
     border-color: var(--text-accent);
     box-shadow: 0 0 0 1px var(--text-accent);
+}
+
+.model-selector-icon {
+    position: absolute;
+    right: 6px;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+
+.model-selector-icon svg {
+    width: 12px;
+    height: 12px;
 }
 
 

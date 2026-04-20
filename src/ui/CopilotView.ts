@@ -65,7 +65,11 @@ export class CopilotView extends ItemView {
         const inputContainer = container.createEl('div', { cls: 'copilot-input-container' });
         
         const inputHeader = inputContainer.createEl('div', { cls: 'copilot-input-header' });
-        this.modelSelect = inputHeader.createEl('select', { cls: 'model-selector' });
+        const modelSelectWrapper = inputHeader.createEl('div', { cls: 'model-selector-wrapper' });
+        this.modelSelect = modelSelectWrapper.createEl('select', { cls: 'model-selector' });
+        
+        const iconEl = modelSelectWrapper.createEl('div', { cls: 'model-selector-icon' });
+        setIcon(iconEl, 'chevron-down');
         
         AVAILABLE_MODELS.forEach(model => {
             const option = this.modelSelect.createEl('option', {
