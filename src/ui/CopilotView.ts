@@ -109,14 +109,11 @@ export class CopilotView extends ItemView {
         const inputWrapper = inputContainer.createEl('div', { cls: 'copilot-input-wrapper' });
 
         this.chipsContainer = inputWrapper.createEl('div', { cls: 'context-chips-container' });
-        if (this.plugin.settings.autoAddActiveNote) {
-            this.addContextFile(this.app.workspace.getActiveFile());
-        }
         this.renderContextChips();
 
-        this.registerEvent(this.app.workspace.on('file-open', (file) => {
+        this.registerEvent(this.app.workspace.on('file-open', () => {
             if (this.plugin.settings.autoAddActiveNote) {
-                this.addContextFile(file);
+                this.renderContextChips();
             }
         }));
 
@@ -141,9 +138,6 @@ export class CopilotView extends ItemView {
         this.sessionModel = this.plugin.settings.defaultModel;
         this.modelSelect.value = this.sessionModel;
         this.contextFiles = [];
-        if (this.plugin.settings.autoAddActiveNote) {
-            this.addContextFile(this.app.workspace.getActiveFile());
-        }
         this.renderContextChips();
         this.messageContainer.empty();
         await this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
@@ -285,13 +279,25 @@ export class CopilotView extends ItemView {
 
     renderContextChips() {
         this.chipsContainer.empty();
-        if (this.contextFiles.length === 0) {
+        
+        const activeFile = this.app.workspace.getActiveFile();
+        const showActive = this.plugin.settings.autoAddActiveNote && activeFile && activeFile.extension === 'md';
+
+        if (this.contextFiles.length === 0 && !showActive) {
             this.chipsContainer.hide();
             return;
         }
         this.chipsContainer.show();
 
+        if (showActive && activeFile) {
+            const chip = this.chipsContainer.createEl('div', { cls: 'context-chip active-note' });
+            chip.createEl('span', { text: `Active: ${activeFile.basename}`, cls: 'context-chip-name' });
+        }
+
         this.contextFiles.forEach(file => {
+            // Don't duplicate if it's already shown as active
+            if (showActive && activeFile && file.path === activeFile.path) return;
+
             const chip = this.chipsContainer.createEl('div', { cls: 'context-chip' });
             chip.createEl('span', { text: file.basename, cls: 'context-chip-name' });
             
@@ -323,7 +329,21 @@ export class CopilotView extends ItemView {
             const allFiles = this.app.vault.getMarkdownFiles();
             const seenFiles = new Set<string>();
 
-            // 1. Add files from context chips first (explicitly added)
+            // 0. Add active file if auto-add is enabled
+            if (this.plugin.settings.autoAddActiveNote) {
+                const activeFile = this.app.workspace.getActiveFile();
+                if (activeFile && activeFile.extension === 'md') {
+                    try {
+                        const content = await this.app.vault.read(activeFile);
+                        combinedContext += `Note: ${activeFile.basename}\nContent:\n${content}\n---\n\n`;
+                        seenFiles.add(activeFile.path);
+                    } catch (err) {
+                        console.error(`Failed to read active file context: ${activeFile.path}`, err);
+                    }
+                }
+            }
+
+            // 1. Add files from context chips (explicitly added)
             for (const file of this.contextFiles) {
                 if (!seenFiles.has(file.path)) {
                     try {
