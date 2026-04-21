@@ -1,90 +1,52 @@
-# Obsidian Sample Plugin
+# Obsidian Gemini Copilot
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+A powerful Google Gemini-powered AI assistant for Obsidian that helps you write, brainstorm, and navigate your notes with full vault awareness.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## Setup: API Key
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+To use this plugin, you need a Google Gemini API key.
 
-## First time developing plugins?
+1. **Obtain an API Key**: Go to [Google AI Studio](https://aistudio.google.com/app/api-keys).
+2. **Free Tier**: For most use cases, the free tier is more than enough.
+3. **Configure Plugin**: 
+   - Open Obsidian **Settings**.
+   - Navigate to **Community plugins** -> **Obsidian Gemini Copilot**.
+   - Paste your API key into the **Google AI API Key** field.
 
-Quick starting guide for new plugin devs:
+## Features
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+- **Context-Aware Chat**: Automatically includes your currently active note as context for every conversation.
+- **Vault-wide @Mentions**: Link any file in your vault as context by simply typing `@` in the chat input.
+- **Interactive Sidebar**: A dedicated side view for quick access to your AI assistant.
+- **Model Selection**: Switch between various Gemini models (Gemma 3, Gemma 4, etc.) on the fly.
+- **Markdown Rendering**: AI responses are rendered using Obsidian's native Markdown engine, including support for code blocks, formatting, and mathematical equations.
+- **Copy to Clipboard**: Quickly copy any AI response with one click.
+- **New Conversation**: Easily reset your chat session to start fresh.
 
-## Releasing new releases
+## Usage
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+1. Click the **Gemini** icon in the left ribbon (or use the command palette) to open the Copilot sidebar.
+2. Type your message in the text area at the bottom.
+3. Use `@` followed by a file name to include specific notes in your query.
+4. Hit **Enter** (or click the send icon) to chat.
+5. Use the dropdown in the input area to switch models mid-conversation.
+6. Click the **+** (New Conversation) button in the header to clear the history.
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+## Settings
 
-## Adding your plugin to the community plugin list
+- **Google AI API Key**: Your authentication key for the Gemini API.
+- **Default Model**: The model that will be selected by default when you open a new chat.
+- **Auto-Add Active Note**: Toggle whether the currently open note should be automatically added as context.
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+## Development
 
-## How to use
+If you'd like to contribute or build the plugin from source:
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+1. Clone the repository into your vault's `.obsidian/plugins/` folder.
+2. Run `npm install` to install dependencies.
+3. Run `npm run dev` to start the development build with watch mode.
+4. Run `npm run build` for a production-ready build.
 
-## Manually installing the plugin
+## License
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
-
-## Funding URL
-
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
-
-If you have multiple URLs, you can also do:
-
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
-
-## API Documentation
-
-See https://docs.obsidian.md
+This project is licensed under the MIT License.
