@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf, Notice, TFile, setIcon, MarkdownRenderer } from 'obsidian';
 import { GeminiService } from '../services/GeminiService';
 import ObsidianGeminiCopilot from '../main';
-import { AVAILABLE_MODELS, getModelName } from '../utils/constants';
+import { getModelName } from '../utils/constants';
 import { ContextFileModal } from './ContextFileModal';
 import { setCssProps } from '../utils/helpers';
 
@@ -94,7 +94,7 @@ export class CopilotView extends ItemView {
         const iconEl = modelSelectWrapper.createEl('div', { cls: 'model-selector-icon' });
         setIcon(iconEl, 'chevron-down');
         
-        AVAILABLE_MODELS.forEach(model => {
+        this.plugin.models.forEach(model => {
             const option = this.modelSelect.createEl('option', {
                 text: model.name,
                 value: model.id
@@ -433,7 +433,7 @@ export class CopilotView extends ItemView {
             if (modelId) {
                 footerEl.createEl('div', { 
                     cls: 'message-model-name', 
-                    text: getModelName(modelId) 
+                    text: getModelName(modelId, this.plugin.models) 
                 });
             }
 

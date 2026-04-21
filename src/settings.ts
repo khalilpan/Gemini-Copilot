@@ -1,6 +1,5 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting, DropdownComponent } from "obsidian";
 import ObsidianGeminiCopilot from "./main";
-import { AVAILABLE_MODELS } from "./utils/constants";
 
 export interface GeminiCopilotSettings {
 	apiKey: string;
@@ -40,15 +39,15 @@ export class GeminiCopilotSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.apiKey = value;
 					await this.plugin.saveSettings();
+					await this.plugin.refreshModels();
+					this.display(); // Refresh the UI to update the model dropdown
 				}));
 
 		new Setting(containerEl)
 			.setName('Default model')
 			.setDesc('Select the default model to use for new conversations')
 			.addDropdown(dropdown => {
-				AVAILABLE_MODELS.forEach(model => {
-					dropdown.addOption(model.id, model.name);
-				});
+				this.updateModelDropdown(dropdown);
 				dropdown.setValue(this.plugin.settings.defaultModel)
 					.onChange(async (value) => {
 						this.plugin.settings.defaultModel = value;
@@ -65,5 +64,12 @@ export class GeminiCopilotSettingTab extends PluginSettingTab {
 					this.plugin.settings.autoAddActiveNote = value;
 					await this.plugin.saveSettings();
 				}));
+	}
+
+	private updateModelDropdown(dropdown: DropdownComponent) {
+		dropdown.selectEl.empty();
+		this.plugin.models.forEach(model => {
+			dropdown.addOption(model.id, model.name);
+		});
 	}
 }

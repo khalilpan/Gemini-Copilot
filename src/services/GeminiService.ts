@@ -1,4 +1,5 @@
 import { requestUrl } from 'obsidian';
+import { ModelInfo } from '../utils/constants';
 
 interface GeminiResponse {
     candidates?: {
@@ -14,6 +15,40 @@ interface GeminiResponse {
 export class GeminiService {
     private apiKey: string;
     private model: string;
+
+    static async listModels(apiKey: string): Promise<ModelInfo[]> {
+        if (!apiKey) {
+            return [];
+        }
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+
+        try {
+            const response = await requestUrl({
+                url: url,
+                method: 'GET',
+                contentType: 'application/json'
+            });
+
+            if (response.status !== 200) {
+                console.error('Failed to fetch models:', response.json);
+                return [];
+            }
+
+            const data = response.json as { models: any[] };
+            if (!data.models) return [];
+
+            return data.models
+                .filter(m => m.supportedGenerationMethods.includes('generateContent'))
+                .map(m => ({
+                    id: m.name.replace('models/', ''),
+                    name: m.displayName
+                }));
+        } catch (error) {
+            console.error('Error fetching Gemini models:', error);
+            return [];
+        }
+    }
 
     constructor(apiKey: string, model: string) {
         this.apiKey = apiKey;

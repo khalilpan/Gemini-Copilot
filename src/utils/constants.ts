@@ -3,7 +3,7 @@ export interface ModelInfo {
     name: string;
 }
 
-export const AVAILABLE_MODELS: ModelInfo[] = [
+export const FALLBACK_MODELS: ModelInfo[] = [
     { id: 'gemma-3-1b-it', name: 'Gemma 3 1B' },
     { id: 'gemma-3-4b-it', name: 'Gemma 3 4B' },
     { id: 'gemma-3-12b-it', name: 'Gemma 3 12B' },
@@ -12,7 +12,7 @@ export const AVAILABLE_MODELS: ModelInfo[] = [
     { id: 'gemma-4-31b-it', name: 'Gemma 4 31B' }
 ];
 
-export function getModelName(id: string): string {
-    const model = AVAILABLE_MODELS.find(m => m.id === id);
+export function getModelName(id: string, models: ModelInfo[] = FALLBACK_MODELS): string {
+    const model = models.find(m => m.id === id);
     return model ? model.name : id;
 }

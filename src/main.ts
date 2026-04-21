@@ -1,12 +1,16 @@
 import { Plugin, WorkspaceLeaf } from 'obsidian';
 import { DEFAULT_SETTINGS, GeminiCopilotSettings, GeminiCopilotSettingTab } from "./settings";
 import { CopilotView, VIEW_TYPE_COPILOT } from "./ui/CopilotView";
+import { FALLBACK_MODELS, ModelInfo } from './utils/constants';
+import { GeminiService } from './services/GeminiService';
 
 export default class ObsidianGeminiCopilot extends Plugin {
 	settings: GeminiCopilotSettings;
+	models: ModelInfo[] = FALLBACK_MODELS;
 
 	async onload() {
 		await this.loadSettings();
+		await this.refreshModels();
 
 		// Register the custom view
 		this.registerView(
@@ -75,5 +79,18 @@ export default class ObsidianGeminiCopilot extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	async refreshModels() {
+		if (this.settings.apiKey) {
+			const fetchedModels = await GeminiService.listModels(this.settings.apiKey);
+			if (fetchedModels.length > 0) {
+				this.models = fetchedModels;
+			} else {
+				this.models = FALLBACK_MODELS;
+			}
+		} else {
+			this.models = FALLBACK_MODELS;
+		}
 	}
 }
