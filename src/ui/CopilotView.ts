@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, TFile, setIcon, MarkdownRenderer } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, TFile, setIcon, MarkdownRenderer, MarkdownView } from 'obsidian';
 import { GeminiService } from '../services/GeminiService';
 import ObsidianGeminiCopilot from '../main';
 import { getModelName } from '../utils/constants';
@@ -340,6 +340,16 @@ export class CopilotView extends ItemView {
             // Gather all markdown files once for lookup
             const allFiles = this.app.vault.getMarkdownFiles();
             const seenFiles = new Set<string>();
+            
+            // 0. Add selected text from active editor
+            const mostRecentLeaf = this.app.workspace.getMostRecentLeaf();
+            const activeView = mostRecentLeaf?.view instanceof MarkdownView ? mostRecentLeaf.view : null;
+            if (activeView) {
+                const selection = activeView.editor.getSelection();
+                if (selection && selection.trim().length > 0) {
+                    combinedContext += `SELECTED TEXT FROM "${activeView.file?.basename}":\n${selection}\n---\n\n`;
+                }
+            }
 
             // 0. Add active file if auto-add is enabled and not excluded
             if (this.plugin.settings.autoAddActiveNote && !this.isAutoNoteExcluded) {
@@ -447,6 +457,22 @@ export class CopilotView extends ItemView {
                 new Notice('Copied to clipboard');
                 setIcon(copyBtn, 'check');
                 setTimeout(() => setIcon(copyBtn, 'copy'), 2000);
+            };
+
+            const insertBtn = footerEl.createEl('button', {
+                cls: 'insert-message-button',
+                attr: { 'aria-label': 'Insert at cursor' }
+            });
+            setIcon(insertBtn, 'text-cursor-input');
+            insertBtn.onclick = () => {
+                const mostRecentLeaf = this.app.workspace.getMostRecentLeaf();
+                const activeView = mostRecentLeaf?.view instanceof MarkdownView ? mostRecentLeaf.view : null;
+                if (activeView) {
+                    activeView.editor.replaceSelection(content);
+                    new Notice('Inserted at cursor');
+                } else {
+                    new Notice('No active note to insert into');
+                }
             };
         }
 

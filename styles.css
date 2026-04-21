@@ -149,9 +149,34 @@
     color: var(--text-normal);
 }
 
-.copy-message-button svg {
+.copy-message-button svg, .insert-message-button svg {
     width: 14px;
     height: 14px;
+}
+
+.insert-message-button {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    width: 26px;
+    height: 26px;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.copilot-message:hover .insert-message-button {
+    opacity: 1;
+}
+
+.insert-message-button:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--text-normal);
 }
 
 .message-content {
