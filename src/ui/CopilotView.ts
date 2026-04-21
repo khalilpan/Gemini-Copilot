@@ -3,6 +3,7 @@ import { GeminiService } from '../services/GeminiService';
 import ObsidianGeminiCopilot from '../main';
 import { AVAILABLE_MODELS, getModelName } from '../utils/constants';
 import { ContextFileModal } from './ContextFileModal';
+import { setCssProps } from '../utils/helpers';
 
 export const VIEW_TYPE_COPILOT = "gemini-copilot-view";
 
@@ -163,14 +164,14 @@ export class CopilotView extends ItemView {
     }
 
     private adjustInputHeight() {
-        this.inputEl.style.height = 'auto';
-        this.inputEl.style.height = this.inputEl.scrollHeight + 'px';
+        setCssProps(this.inputEl, { 'height': 'auto' });
+        setCssProps(this.inputEl, { 'height': `${this.inputEl.scrollHeight}px` });
         
         // Show scrollbar only when max height is reached
         if (this.inputEl.scrollHeight > this.inputEl.offsetHeight) {
-            this.inputEl.style.overflowY = 'auto';
+            setCssProps(this.inputEl, { 'overflow-y': 'auto' });
         } else {
-            this.inputEl.style.overflowY = 'hidden';
+            setCssProps(this.inputEl, { 'overflow-y': 'hidden' });
         }
     }
 
@@ -198,7 +199,7 @@ export class CopilotView extends ItemView {
 
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            this.handleSendMessage();
+            void this.handleSendMessage();
         }
     }
 
@@ -324,8 +325,10 @@ export class CopilotView extends ItemView {
         if (!query) return;
 
         this.inputEl.value = '';
-        this.inputEl.style.height = 'auto';
-        this.inputEl.style.overflowY = 'hidden';
+        setCssProps(this.inputEl, {
+            'height': 'auto',
+            'overflow-y': 'hidden'
+        });
         await this.addMessage('User', query);
         const loadingMsg = await this.addMessage('Assistant', 'Thinking...');
 
@@ -422,7 +425,7 @@ export class CopilotView extends ItemView {
         headerEl.createEl('div', { cls: 'message-role', text: role });
 
         const contentEl = msgEl.createEl('div', { cls: 'message-content' });
-        await MarkdownRenderer.renderMarkdown(content, contentEl, "", this);
+        await MarkdownRenderer.render(this.app, content, contentEl, "", this);
 
         if (role === 'Assistant') {
             const footerEl = msgEl.createEl('div', { cls: 'message-footer' });

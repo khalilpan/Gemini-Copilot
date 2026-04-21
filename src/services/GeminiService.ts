@@ -1,5 +1,16 @@
 import { requestUrl } from 'obsidian';
 
+interface GeminiResponse {
+    candidates?: {
+        content: {
+            parts: { text: string }[];
+        };
+    }[];
+    error?: {
+        message: string;
+    };
+}
+
 export class GeminiService {
     private apiKey: string;
     private model: string;
@@ -11,7 +22,7 @@ export class GeminiService {
 
     async generateResponse(prompt: string, context?: string, history: { role: string, parts: { text: string }[] }[] = []): Promise<string> {
         if (!this.apiKey) {
-            throw new Error('API Key is missing. Please set it in the plugin settings.');
+            throw new Error('API key is missing. Please set it in the plugin settings.');
         }
 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
@@ -43,30 +54,32 @@ ${prompt}`
                 body: JSON.stringify({ contents })
             };
 
-            console.log('--- Gemini API Request ---');
-            console.log('URL:', requestOptions.url);
-            console.log('Method:', requestOptions.method);
-            console.log('Headers:', { 'Content-Type': requestOptions.contentType });
-            console.log('Body:', JSON.parse(requestOptions.body));
+            console.debug('--- Gemini API Request ---');
+            console.debug('URL:', requestOptions.url);
+            console.debug('Method:', requestOptions.method);
+            console.debug('Headers:', { 'Content-Type': requestOptions.contentType });
+            console.debug('Body:', JSON.parse(requestOptions.body));
 
             const response = await requestUrl(requestOptions);
 
-            console.log('--- Gemini API Response ---');
-            console.log('Status:', response.status);
-            console.log('Headers:', response.headers);
-            console.log('Response JSON:', response.json);
+            console.debug('--- Gemini API Response ---');
+            console.debug('Status:', response.status);
+            console.debug('Headers:', response.headers);
+            console.debug('Response JSON:', response.json);
+
+            const data = response.json as GeminiResponse;
 
             if (response.status !== 200) {
-                const errorData = response.json;
-                throw new Error(errorData.error?.message || `API Error: ${response.status}`);
+                throw new Error(data.error?.message || `API Error: ${response.status}`);
             }
 
-            const data = response.json;
             if (data.candidates && data.candidates.length > 0) {
-                return data.candidates[0].content.parts[0].text;
-            } else {
-                throw new Error('No response generated from the model.');
+                const firstCandidate = data.candidates[0];
+                if (firstCandidate) {
+                    return firstCandidate.content.parts[0]?.text || '';
+                }
             }
+            throw new Error('No response generated from the model.');
         } catch (error) {
             console.error('Gemini API Error:', error);
             throw error;

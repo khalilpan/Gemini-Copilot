@@ -2,19 +2,19 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import ObsidianGeminiCopilot from "./main";
 import { AVAILABLE_MODELS } from "./utils/constants";
 
-export interface MyPluginSettings {
+export interface GeminiCopilotSettings {
 	apiKey: string;
 	defaultModel: string;
 	autoAddActiveNote: boolean;
 }
 
-export const DEFAULT_SETTINGS: MyPluginSettings = {
+export const DEFAULT_SETTINGS: GeminiCopilotSettings = {
 	apiKey: '',
 	defaultModel: 'gemma-3-27b-it',
 	autoAddActiveNote: true
 }
 
-export class SampleSettingTab extends PluginSettingTab {
+export class GeminiCopilotSettingTab extends PluginSettingTab {
 	plugin: ObsidianGeminiCopilot;
 
 	constructor(app: App, plugin: ObsidianGeminiCopilot) {
@@ -27,7 +27,9 @@ export class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: 'Settings for Gemini copilot' });
+		new Setting(containerEl)
+			.setName('Gemini copilot')
+			.setHeading();
 
 		new Setting(containerEl)
 			.setName('Google AI API key')

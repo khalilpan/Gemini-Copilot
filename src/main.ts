@@ -1,9 +1,9 @@
 import { Plugin, WorkspaceLeaf } from 'obsidian';
-import { DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab } from "./settings";
+import { DEFAULT_SETTINGS, GeminiCopilotSettings, GeminiCopilotSettingTab } from "./settings";
 import { CopilotView, VIEW_TYPE_COPILOT } from "./ui/CopilotView";
 
 export default class ObsidianGeminiCopilot extends Plugin {
-	settings: MyPluginSettings;
+	settings: GeminiCopilotSettings;
 
 	async onload() {
 		await this.loadSettings();
@@ -22,14 +22,14 @@ export default class ObsidianGeminiCopilot extends Plugin {
 		// Add command to open the view
 		this.addCommand({
 			id: 'open-gemini-copilot',
-			name: 'Open Gemini copilot',
+			name: 'Open gemini copilot',
 			callback: () => {
 				void this.activateView();
 			}
 		});
 
 		// Add settings tab
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new GeminiCopilotSettingTab(this.app, this));
 	}
 
 	onunload() {
