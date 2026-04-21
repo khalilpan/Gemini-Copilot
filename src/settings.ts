@@ -27,10 +27,10 @@ export class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: 'Settings for Gemini Copilot' });
+		containerEl.createEl('h2', { text: 'Settings for Gemini copilot' });
 
 		new Setting(containerEl)
-			.setName('Google AI API Key')
+			.setName('Google AI API key')
 			.setDesc('Enter your API key from https://aistudio.google.com/')
 			.addText(text => text
 				.setPlaceholder('Enter your API key')
@@ -41,7 +41,7 @@ export class SampleSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Default Model')
+			.setName('Default model')
 			.setDesc('Select the default model to use for new conversations')
 			.addDropdown(dropdown => {
 				AVAILABLE_MODELS.forEach(model => {

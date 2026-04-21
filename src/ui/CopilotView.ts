@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, MarkdownView, Notice, TFile, setIcon, MarkdownRenderer } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, TFile, setIcon, MarkdownRenderer } from 'obsidian';
 import { GeminiService } from '../services/GeminiService';
 import ObsidianGeminiCopilot from '../main';
 import { AVAILABLE_MODELS, getModelName } from '../utils/constants';
@@ -31,7 +31,7 @@ export class CopilotView extends ItemView {
     }
 
     getDisplayText(): string {
-        return "Gemini Copilot";
+        return "Gemini copilot";
     }
 
     getIcon(): string {
@@ -47,19 +47,19 @@ export class CopilotView extends ItemView {
 
         // Header
         const header = container.createEl('div', { cls: 'copilot-header' });
-        header.createEl('h4', { text: 'Gemini Copilot' });
+        header.createEl('h4', { text: 'Gemini copilot' });
 
         const headerActions = header.createEl('div', { cls: 'header-actions' });
         const newChatBtn = headerActions.createEl('button', {
             cls: 'new-chat-button',
-            attr: { 'aria-label': 'New Conversation' }
+            attr: { 'aria-label': 'New conversation' }
         });
         setIcon(newChatBtn, 'plus');
         newChatBtn.onclick = () => this.handleNewChat();
 
         // Message Container
         this.messageContainer = container.createEl('div', { cls: 'copilot-messages' });
-        await this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
+        await this.addMessage('System', 'Hello! I am your Gemini copilot. How can I help you today? Type @ to mention a note.');
 
         // Suggestion List (Hidden initially)
         this.suggestEl = container.createEl('div', { cls: 'copilot-suggest' });
@@ -142,7 +142,7 @@ export class CopilotView extends ItemView {
         this.isAutoNoteExcluded = false;
         this.renderContextChips();
         this.messageContainer.empty();
-        await this.addMessage('System', 'Hello! I am your Gemini Copilot. How can I help you today? Type @ to mention a note.');
+        await this.addMessage('System', 'Hello! I am your Gemini copilot. How can I help you today? Type @ to mention a note.');
         new Notice('New conversation started');
     }
 
@@ -240,7 +240,7 @@ export class CopilotView extends ItemView {
                 cls: `suggest-item${isSelected ? ' is-selected' : ''}`
             });
 
-            const nameEl = item.createSpan({ text: file.basename });
+            item.createSpan({ text: file.basename });
 
             if (file === this.app.workspace.getActiveFile()) {
                 item.createSpan({ cls: 'suggest-hint', text: 'Current' });

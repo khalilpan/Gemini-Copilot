@@ -15,16 +15,16 @@ export default class ObsidianGeminiCopilot extends Plugin {
 		);
 
 		// Add ribbon icon to toggle the view
-		this.addRibbonIcon('bot', 'Gemini Copilot', (evt: MouseEvent) => {
-			this.activateView();
+		this.addRibbonIcon('bot', 'Gemini copilot', (evt: MouseEvent) => {
+			void this.activateView();
 		});
 
 		// Add command to open the view
 		this.addCommand({
 			id: 'open-gemini-copilot',
-			name: 'Open Gemini Copilot',
+			name: 'Open Gemini copilot',
 			callback: () => {
-				this.activateView();
+				void this.activateView();
 			}
 		});
 
@@ -33,8 +33,7 @@ export default class ObsidianGeminiCopilot extends Plugin {
 	}
 
 	onunload() {
-		// Clean up the view when the plugin is disabled
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_COPILOT);
+		// Obsidian will handle cleaning up views when the plugin is disabled
 	}
 
 	async activateView() {
@@ -57,18 +56,19 @@ export default class ObsidianGeminiCopilot extends Plugin {
 
 		// "Reveal" the leaf in case it is in a collapsed sidebar
 		if (leaf) {
-			workspace.revealLeaf(leaf);
+			void workspace.revealLeaf(leaf);
 		}
 	}
 
 	async loadSettings() {
-		const loadedData = await this.loadData();
+		const loadedData: unknown = await this.loadData();
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedData);
 		
 		// Migration: if the old 'model' setting exists, move it to 'defaultModel' and delete 'model'
-		if (loadedData && (loadedData as any).model) {
-			this.settings.defaultModel = (loadedData as any).model;
-			delete (this.settings as any).model;
+		const dataWithOldModel = loadedData as { model?: string };
+		if (dataWithOldModel && dataWithOldModel.model) {
+			this.settings.defaultModel = dataWithOldModel.model;
+			delete (this.settings as unknown as { model?: string }).model;
 			await this.saveSettings();
 		}
 	}
