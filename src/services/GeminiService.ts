@@ -1,6 +1,16 @@
 import { requestUrl } from 'obsidian';
 import { ModelInfo } from '../utils/constants';
 
+interface GeminiModel {
+    name: string;
+    displayName: string;
+    supportedGenerationMethods: string[];
+}
+
+interface GeminiListModelsResponse {
+    models: GeminiModel[];
+}
+
 interface GeminiResponse {
     candidates?: {
         content: {
@@ -35,12 +45,12 @@ export class GeminiService {
                 return [];
             }
 
-            const data = response.json as { models: any[] };
+            const data = response.json as GeminiListModelsResponse;
             if (!data.models) return [];
 
             return data.models
-                .filter(m => m.supportedGenerationMethods.includes('generateContent'))
-                .map(m => ({
+                .filter((m: GeminiModel) => m.supportedGenerationMethods.includes('generateContent'))
+                .map((m: GeminiModel) => ({
                     id: m.name.replace('models/', ''),
                     name: m.displayName
                 }));
