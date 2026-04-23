@@ -73,12 +73,15 @@ export class CopilotView extends ItemView {
         });
         setIcon(historyChatBtn, 'history');
         historyChatBtn.onclick = () => {
-            new ChatHistoryModal(this.app, (file) => this.handleLoadChat(file)).open();
+            new ChatHistoryModal(this.app, (file) => {
+                void this.handleLoadChat(file);
+            }).open();
         };
 
         // Message Container
         this.messageContainer = container.createEl('div', { cls: 'copilot-messages' });
-        await this.addMessage('System', 'Hello! I am your Gemini copilot. How can I help you today? Type @ to mention a note.');
+        const userName = this.plugin.settings.userName || 'User';
+        await this.addMessage('System', `Hello ${userName}! I am your Gemini copilot. How can I help you today? Type @ to mention a note.`);
 
         // Suggestion List (Hidden initially)
         this.suggestEl = container.createEl('div', { cls: 'copilot-suggest' });
@@ -162,7 +165,8 @@ export class CopilotView extends ItemView {
         this.currentChatFile = null;
         this.renderContextChips();
         this.messageContainer.empty();
-        await this.addMessage('System', 'Hello! I am your Gemini copilot. How can I help you today? Type @ to mention a note.');
+        const userName = this.plugin.settings.userName || 'User';
+        await this.addMessage('System', `Hello ${userName}! I am your Gemini copilot. How can I help you today? Type @ to mention a note.`);
         new Notice('New conversation started');
     }
 
@@ -348,7 +352,7 @@ export class CopilotView extends ItemView {
             'height': 'auto',
             'overflow-y': 'hidden'
         });
-        await this.addMessage('User', query);
+        await this.addMessage(this.plugin.settings.userName || 'User', query);
         const loadingMsg = await this.addMessage('Assistant', 'Thinking...');
 
         try {
@@ -448,8 +452,12 @@ export class CopilotView extends ItemView {
     }
 
     async addMessage(role: string, content: string, isError: boolean = false, modelId?: string): Promise<HTMLDivElement> {
+        const isAssistant = role === 'Assistant';
+        const isSystem = role === 'System';
+        const typeClass = isAssistant ? 'assistant' : (isSystem ? 'system' : 'user');
+
         const msgEl = this.messageContainer.createEl('div', {
-            cls: `copilot-message ${role.toLowerCase()}${isError ? ' error' : ''}`
+            cls: `copilot-message ${typeClass}${isError ? ' error' : ''}`
         });
 
         const headerEl = msgEl.createEl('div', { cls: 'message-header' });
@@ -458,7 +466,7 @@ export class CopilotView extends ItemView {
         const contentEl = msgEl.createEl('div', { cls: 'message-content' });
         await MarkdownRenderer.render(this.app, content, contentEl, "", this);
 
-        if (role === 'Assistant') {
+        if (isAssistant) {
             const footerEl = msgEl.createEl('div', { cls: 'message-footer' });
             
             if (modelId) {
@@ -527,9 +535,12 @@ export class CopilotView extends ItemView {
         content += `# Gemini Chat Session: ${title}\n\n`;
 
         for (const msg of this.history) {
-            const role = msg.role === 'user' ? 'user' : 'assistant';
-            content += `> [!${role}]\n`;
-            content += `> ${msg.parts[0].text.replace(/\n/g, '\n> ')}\n\n`;
+            const isUser = msg.role === 'user';
+            const role = isUser ? 'user' : 'assistant';
+            const displayName = isUser ? (this.plugin.settings.userName || 'User') : 'Assistant';
+            content += `> [!${role}] ${displayName}\n`;
+            const msgText = msg.parts[0]?.text || '';
+            content += `> ${msgText.replace(/\n/g, '\n> ')}\n\n`;
         }
 
         try {
@@ -545,7 +556,8 @@ export class CopilotView extends ItemView {
             }
         } catch (err) {
             console.error('Failed to save chat:', err);
-            if (!isAutoSave) new Notice('Failed to save chat: ' + err.message);
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            if (!isAutoSave) new Notice('Failed to save chat: ' + errorMessage);
         }
     }
 
@@ -555,21 +567,25 @@ export class CopilotView extends ItemView {
             const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
             
             if (!frontmatterMatch) {
-                new Notice('Invalid chat file: No frontmatter found');
+                new Notice('Invalid chat file: no frontmatter found');
                 return;
             }
 
             const yaml = frontmatterMatch[1];
+            if (!yaml) {
+                new Notice('Invalid chat file: empty frontmatter');
+                return;
+            }
             const historyMatch = yaml.match(/history: (\[.*\])/);
             const modelMatch = yaml.match(/model: (.*)/);
 
-            if (!historyMatch) {
-                new Notice('Invalid chat file: No history found in frontmatter');
+            if (!historyMatch || !historyMatch[1]) {
+                new Notice('Invalid chat file: no history found in frontmatter');
                 return;
             }
 
-            this.history = JSON.parse(historyMatch[1]);
-            if (modelMatch) {
+            this.history = JSON.parse(historyMatch[1]) as { role: string, parts: { text: string }[] }[];
+            if (modelMatch && modelMatch[1]) {
                 const loadedModel = modelMatch[1].trim();
                 if (this.plugin.models.some(m => m.id === loadedModel)) {
                     this.sessionModel = loadedModel;
@@ -583,14 +599,15 @@ export class CopilotView extends ItemView {
             new Notice(`Loaded chat: ${file.basename}`);
         } catch (error) {
             console.error('Failed to load chat:', error);
-            new Notice('Failed to load chat: ' + error.message);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            new Notice('Failed to load chat: ' + errorMessage);
         }
     }
 
     async renderHistory() {
         for (const entry of this.history) {
-            const role = entry.role === 'user' ? 'User' : 'Assistant';
-            const text = entry.parts[0].text;
+            const role = entry.role === 'user' ? (this.plugin.settings.userName || 'User') : 'Assistant';
+            const text = entry.parts[0]?.text || '';
             await this.addMessage(role, text, false, entry.role === 'model' ? this.sessionModel : undefined);
         }
     }
