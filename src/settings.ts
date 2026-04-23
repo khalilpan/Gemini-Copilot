@@ -5,12 +5,14 @@ export interface GeminiCopilotSettings {
 	apiKey: string;
 	defaultModel: string;
 	autoAddActiveNote: boolean;
+	userName: string;
 }
 
 export const DEFAULT_SETTINGS: GeminiCopilotSettings = {
 	apiKey: '',
 	defaultModel: 'gemma-3-27b-it',
-	autoAddActiveNote: true
+	autoAddActiveNote: true,
+	userName: 'User'
 }
 
 export class GeminiCopilotSettingTab extends PluginSettingTab {
@@ -29,6 +31,17 @@ export class GeminiCopilotSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName('Gemini copilot')
 			.setHeading();
+
+		new Setting(containerEl)
+			.setName('User name')
+			.setDesc('The name that will be displayed for your messages in the chat.')
+			.addText(text => text
+				.setPlaceholder('User')
+				.setValue(this.plugin.settings.userName)
+				.onChange(async (value) => {
+					this.plugin.settings.userName = value || 'User';
+					await this.plugin.saveSettings();
+				}));
 
 		new Setting(containerEl)
 			.setName('Google AI API key')
