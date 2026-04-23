@@ -3,6 +3,8 @@ export interface ModelInfo {
     name: string;
 }
 
+export const CHAT_FOLDER = "Gemini Copilot Chats";
+
 export const FALLBACK_MODELS: ModelInfo[] = [
     { id: 'gemma-3-1b-it', name: 'Gemma 3 1B' },
     { id: 'gemma-3-4b-it', name: 'Gemma 3 4B' },
