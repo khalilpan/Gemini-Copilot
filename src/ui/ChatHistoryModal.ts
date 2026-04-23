@@ -1,5 +1,6 @@
 import { App, Modal, TFile, Notice, setIcon } from 'obsidian';
 import { CHAT_FOLDER } from '../utils/constants';
+import { ConfirmationModal } from './ConfirmationModal';
 
 export class ChatHistoryModal extends Modal {
     onSelect: (file: TFile) => void;
@@ -48,13 +49,21 @@ export class ChatHistoryModal extends Modal {
 
             const deleteBtn = itemEl.createEl('div', { cls: 'chat-history-delete', attr: { 'aria-label': 'Delete chat' } });
             setIcon(deleteBtn, 'trash');
-            deleteBtn.onclick = async (e) => {
+            deleteBtn.onclick = (e) => {
                 e.stopPropagation();
-                if (confirm(`Are you sure you want to delete "${file.basename}"?`)) {
-                    await this.app.vault.delete(file);
-                    new Notice('Chat deleted');
-                    this.onOpen(); // Refresh
-                }
+                new ConfirmationModal(
+                    this.app, 
+                    'Delete chat', 
+                    `Are you sure you want to delete "${file.basename}"?`, 
+                    () => {
+                        void (async () => {
+                            await this.app.fileManager.trashFile(file);
+                            new Notice('Chat deleted');
+                            void this.onOpen(); // Refresh
+                        })();
+                    },
+                    'Delete'
+                ).open();
             };
         }
     }
