@@ -466,10 +466,10 @@ export class CopilotView extends ItemView {
         const contentEl = msgEl.createEl('div', { cls: 'message-content' });
         await MarkdownRenderer.render(this.app, content, contentEl, "", this);
 
-        if (isAssistant) {
+        if (isAssistant || typeClass === 'user') {
             const footerEl = msgEl.createEl('div', { cls: 'message-footer' });
             
-            if (modelId) {
+            if (isAssistant && modelId) {
                 footerEl.createEl('div', { 
                     cls: 'message-model-name', 
                     text: getModelName(modelId, this.plugin.models) 
@@ -478,7 +478,7 @@ export class CopilotView extends ItemView {
 
             const copyBtn = footerEl.createEl('button', {
                 cls: 'copy-message-button',
-                attr: { 'aria-label': 'Copy response' }
+                attr: { 'aria-label': isAssistant ? 'Copy response' : 'Copy message' }
             });
             setIcon(copyBtn, 'copy');
             copyBtn.onclick = async () => {
@@ -488,21 +488,23 @@ export class CopilotView extends ItemView {
                 setTimeout(() => setIcon(copyBtn, 'copy'), 2000);
             };
 
-            const insertBtn = footerEl.createEl('button', {
-                cls: 'insert-message-button',
-                attr: { 'aria-label': 'Insert at cursor' }
-            });
-            setIcon(insertBtn, 'text-cursor-input');
-            insertBtn.onclick = () => {
-                const mostRecentLeaf = this.app.workspace.getMostRecentLeaf();
-                const activeView = mostRecentLeaf?.view instanceof MarkdownView ? mostRecentLeaf.view : null;
-                if (activeView) {
-                    activeView.editor.replaceSelection(content);
-                    new Notice('Inserted at cursor');
-                } else {
-                    new Notice('No active note to insert into');
-                }
-            };
+            if (isAssistant) {
+                const insertBtn = footerEl.createEl('button', {
+                    cls: 'insert-message-button',
+                    attr: { 'aria-label': 'Insert at cursor' }
+                });
+                setIcon(insertBtn, 'text-cursor-input');
+                insertBtn.onclick = () => {
+                    const mostRecentLeaf = this.app.workspace.getMostRecentLeaf();
+                    const activeView = mostRecentLeaf?.view instanceof MarkdownView ? mostRecentLeaf.view : null;
+                    if (activeView) {
+                        activeView.editor.replaceSelection(content);
+                        new Notice('Inserted at cursor');
+                    } else {
+                        new Notice('No active note to insert into');
+                    }
+                };
+            }
         }
 
         this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
