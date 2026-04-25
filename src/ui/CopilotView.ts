@@ -379,8 +379,14 @@ export class CopilotView extends ItemView {
                 const activeFile = this.app.workspace.getActiveFile();
                 if (activeFile && activeFile.extension === 'md') {
                     try {
-                        const content = await this.app.vault.read(activeFile);
-                        combinedContext += `Note: ${activeFile.basename}\nContent:\n${content}\n---\n\n`;
+                        let content = "";
+                        // If the active file is currently open in the active view, get the latest content from the editor
+                        if (activeView && activeView.file?.path === activeFile.path) {
+                            content = activeView.editor.getValue();
+                        } else {
+                            content = await this.app.vault.read(activeFile);
+                        }
+                        combinedContext += `context:[Note: ${activeFile.basename}\nContent:\n${content}]\n\n`;
                         seenFiles.add(activeFile.path);
                     } catch (err) {
                         console.error(`Failed to read active file context: ${activeFile.path}`, err);
@@ -392,8 +398,14 @@ export class CopilotView extends ItemView {
             for (const file of this.contextFiles) {
                 if (!seenFiles.has(file.path)) {
                     try {
-                        const content = await this.app.vault.read(file);
-                        combinedContext += `Note: ${file.basename}\nContent:\n${content}\n---\n\n`;
+                        let content = "";
+                        // Check if this context file is the one in the active editor
+                        if (activeView && activeView.file?.path === file.path) {
+                            content = activeView.editor.getValue();
+                        } else {
+                            content = await this.app.vault.read(file);
+                        }
+                        combinedContext += `context:[Note: ${file.basename}\nContent:\n${content}]\n\n`;
                         seenFiles.add(file.path);
                     } catch (err) {
                         console.error(`Failed to read context file: ${file.path}`, err);
@@ -418,8 +430,13 @@ export class CopilotView extends ItemView {
 
                 if (bestMatch && !seenFiles.has(bestMatch.path)) {
                     try {
-                        const content = await this.app.vault.read(bestMatch);
-                        combinedContext += `Note: ${bestMatch.basename}\nContent:\n${content}\n---\n\n`;
+                        let content = "";
+                        if (activeView && activeView.file?.path === bestMatch.path) {
+                            content = activeView.editor.getValue();
+                        } else {
+                            content = await this.app.vault.read(bestMatch);
+                        }
+                        combinedContext += `context:[Note: ${bestMatch.basename}\nContent:\n${content}]\n\n`;
                         seenFiles.add(bestMatch.path);
                     } catch (err) {
                         console.error(`Failed to read mentioned file: ${bestMatch.path}`, err);
@@ -466,10 +483,10 @@ export class CopilotView extends ItemView {
         const contentEl = msgEl.createEl('div', { cls: 'message-content' });
         await MarkdownRenderer.render(this.app, content, contentEl, "", this);
 
-        if (isAssistant) {
+        if (isAssistant || typeClass === 'user') {
             const footerEl = msgEl.createEl('div', { cls: 'message-footer' });
             
-            if (modelId) {
+            if (isAssistant && modelId) {
                 footerEl.createEl('div', { 
                     cls: 'message-model-name', 
                     text: getModelName(modelId, this.plugin.models) 
@@ -478,7 +495,7 @@ export class CopilotView extends ItemView {
 
             const copyBtn = footerEl.createEl('button', {
                 cls: 'copy-message-button',
-                attr: { 'aria-label': 'Copy response' }
+                attr: { 'aria-label': isAssistant ? 'Copy response' : 'Copy message' }
             });
             setIcon(copyBtn, 'copy');
             copyBtn.onclick = async () => {
@@ -488,21 +505,23 @@ export class CopilotView extends ItemView {
                 setTimeout(() => setIcon(copyBtn, 'copy'), 2000);
             };
 
-            const insertBtn = footerEl.createEl('button', {
-                cls: 'insert-message-button',
-                attr: { 'aria-label': 'Insert at cursor' }
-            });
-            setIcon(insertBtn, 'text-cursor-input');
-            insertBtn.onclick = () => {
-                const mostRecentLeaf = this.app.workspace.getMostRecentLeaf();
-                const activeView = mostRecentLeaf?.view instanceof MarkdownView ? mostRecentLeaf.view : null;
-                if (activeView) {
-                    activeView.editor.replaceSelection(content);
-                    new Notice('Inserted at cursor');
-                } else {
-                    new Notice('No active note to insert into');
-                }
-            };
+            if (isAssistant) {
+                const insertBtn = footerEl.createEl('button', {
+                    cls: 'insert-message-button',
+                    attr: { 'aria-label': 'Insert at cursor' }
+                });
+                setIcon(insertBtn, 'text-cursor-input');
+                insertBtn.onclick = () => {
+                    const mostRecentLeaf = this.app.workspace.getMostRecentLeaf();
+                    const activeView = mostRecentLeaf?.view instanceof MarkdownView ? mostRecentLeaf.view : null;
+                    if (activeView) {
+                        activeView.editor.replaceSelection(content);
+                        new Notice('Inserted at cursor');
+                    } else {
+                        new Notice('No active note to insert into');
+                    }
+                };
+            }
         }
 
         this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
