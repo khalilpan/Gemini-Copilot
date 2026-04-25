@@ -73,9 +73,10 @@ export class GeminiService {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
 
         const fullPrompt = context
-            ? `I am providing you with the content of some notes from my Obsidian vault as context for our conversation. Please use this information to answer my question.
+            ? `I am providing you with context from my Obsidian vault to help answer my question. 
+The context below contains the content of one or more notes, each wrapped in a "context:[]" block.
 
-CONTEXT NOTES:
+CONTEXT:
 ${context}
 
 USER QUESTION:

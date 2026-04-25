@@ -379,8 +379,14 @@ export class CopilotView extends ItemView {
                 const activeFile = this.app.workspace.getActiveFile();
                 if (activeFile && activeFile.extension === 'md') {
                     try {
-                        const content = await this.app.vault.read(activeFile);
-                        combinedContext += `Note: ${activeFile.basename}\nContent:\n${content}\n---\n\n`;
+                        let content = "";
+                        // If the active file is currently open in the active view, get the latest content from the editor
+                        if (activeView && activeView.file?.path === activeFile.path) {
+                            content = activeView.editor.getValue();
+                        } else {
+                            content = await this.app.vault.read(activeFile);
+                        }
+                        combinedContext += `context:[Note: ${activeFile.basename}\nContent:\n${content}]\n\n`;
                         seenFiles.add(activeFile.path);
                     } catch (err) {
                         console.error(`Failed to read active file context: ${activeFile.path}`, err);
@@ -392,8 +398,14 @@ export class CopilotView extends ItemView {
             for (const file of this.contextFiles) {
                 if (!seenFiles.has(file.path)) {
                     try {
-                        const content = await this.app.vault.read(file);
-                        combinedContext += `Note: ${file.basename}\nContent:\n${content}\n---\n\n`;
+                        let content = "";
+                        // Check if this context file is the one in the active editor
+                        if (activeView && activeView.file?.path === file.path) {
+                            content = activeView.editor.getValue();
+                        } else {
+                            content = await this.app.vault.read(file);
+                        }
+                        combinedContext += `context:[Note: ${file.basename}\nContent:\n${content}]\n\n`;
                         seenFiles.add(file.path);
                     } catch (err) {
                         console.error(`Failed to read context file: ${file.path}`, err);
@@ -418,8 +430,13 @@ export class CopilotView extends ItemView {
 
                 if (bestMatch && !seenFiles.has(bestMatch.path)) {
                     try {
-                        const content = await this.app.vault.read(bestMatch);
-                        combinedContext += `Note: ${bestMatch.basename}\nContent:\n${content}\n---\n\n`;
+                        let content = "";
+                        if (activeView && activeView.file?.path === bestMatch.path) {
+                            content = activeView.editor.getValue();
+                        } else {
+                            content = await this.app.vault.read(bestMatch);
+                        }
+                        combinedContext += `context:[Note: ${bestMatch.basename}\nContent:\n${content}]\n\n`;
                         seenFiles.add(bestMatch.path);
                     } catch (err) {
                         console.error(`Failed to read mentioned file: ${bestMatch.path}`, err);
