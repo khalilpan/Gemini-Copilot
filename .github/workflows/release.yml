@@ -25,11 +25,6 @@ jobs:
           npm install
           npm run build
 
-      - name: Install GitHub CLI
-        uses: cli/gh-action@v2
-        with:
-          version: latest
-
       - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
