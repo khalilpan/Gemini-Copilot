@@ -47,6 +47,20 @@ If you'd like to contribute or build the plugin from source:
 3. Run `npm run dev` to start the development build with watch mode.
 4. Run `npm run build` for a production-ready build.
 
+## Releasing
+
+To create a new release and trigger the GitHub Actions workflow:
+
+1. Ensure the **version** in `manifest.json` matches the new tag version.
+2. Create a new tag:
+   ```bash
+   git tag [new tag version. Ex: 1.0.4]
+   ```
+3. Push the tag to GitHub:
+   ```bash
+   git push origin [new tag version. Ex: 1.0.4]
+   ```
+
 ## License
 
 This project is licensed under the MIT License.
