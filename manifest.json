@@ -1,6 +1,6 @@
 {
-	"id": "obsidian-gemini-copilot",
-	"name": "Obsidian Gemini Copilot",
+	"id": "copilot-gemini",
+	"name": "Copilot Gemini",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Gemini Copilot for Obsidian is a plugin that helps you to get things done faster.",
