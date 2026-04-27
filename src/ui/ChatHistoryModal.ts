@@ -10,7 +10,7 @@ export class ChatHistoryModal extends Modal {
         this.onSelect = onSelect;
     }
 
-    async onOpen() {
+    onOpen() {
         const { contentEl } = this;
         contentEl.empty();
         contentEl.createEl('h2', { text: 'Chat history' });
@@ -34,12 +34,12 @@ export class ChatHistoryModal extends Modal {
 
         for (const file of files) {
             const itemEl = listEl.createEl('div', { cls: 'chat-history-item' });
-            
+
             const infoEl = itemEl.createEl('div', { cls: 'chat-history-info' });
             infoEl.createEl('div', { cls: 'chat-history-name', text: file.basename });
-            infoEl.createEl('div', { 
-                cls: 'chat-history-date', 
-                text: new Date(file.stat.mtime).toLocaleString() 
+            infoEl.createEl('div', {
+                cls: 'chat-history-date',
+                text: new Date(file.stat.mtime).toLocaleString()
             });
 
             itemEl.onclick = () => {
@@ -52,14 +52,14 @@ export class ChatHistoryModal extends Modal {
             deleteBtn.onclick = (e) => {
                 e.stopPropagation();
                 new ConfirmationModal(
-                    this.app, 
-                    'Delete chat', 
-                    `Are you sure you want to delete "${file.basename}"?`, 
+                    this.app,
+                    'Delete chat',
+                    `Are you sure you want to delete "${file.basename}"?`,
                     () => {
                         void (async () => {
                             await this.app.fileManager.trashFile(file);
                             new Notice('Chat deleted');
-                            void this.onOpen(); // Refresh
+                            this.onOpen(); // Refresh
                         })();
                     },
                     'Delete'
